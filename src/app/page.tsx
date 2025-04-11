@@ -1,103 +1,136 @@
-import Image from "next/image";
+'use client'
+
+import { useForm } from "react-hook-form";
+import { DevTool } from "@hookform/devtools";
+import { useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
+
+type FormValues = {
+  username: string;
+  password: {
+    pass: string
+  }
+  channel: string;
+  social: {
+    twitter: string;
+    facebook: string;
+  },
+  phoneNumbers: {
+    id: string;
+    value: string;
+  }[];
+  age: number;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const form = useForm<FormValues>({
+    defaultValues: {
+      username: "",
+      password: {
+        pass: ""
+      },
+      channel: "",
+      social: {
+        twitter: "",
+        facebook: ""
+      },
+      phoneNumbers: [{ id: "", value: "" }],
+      age: 0
+    }
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const { register, control, handleSubmit, setValue, formState, watch, reset } = form;
+  const { errors, isValid, isSubmitting } = formState;
+  const watchedAge = watch(["age", "channel"]);
+
+  const { fields, append, remove } = useFieldArray({
+    name: "phoneNumbers",
+    control,
+  })
+
+  useEffect(() => {
+    const subscription = watch((name) => {
+      console.log(name);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watchedAge])
+
+  const onSubmit = (data: FormValues) => {
+    console.log(data);
+  }
+
+  return (
+    <div className="mt-[10vh]" onSubmit={handleSubmit(onSubmit)}>
+      <form className="flex flex-col gap-2 w-1/3 mx-auto" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="flex w-full justify-between gap-2">
+          <label htmlFor="username">Username</label>
+          <input {...register("username", {
+            required: "Username is required",
+            validate: {
+              notAdmin: (value) => {
+                return (value !== "admin") || "Username cannot be admin";
+              },
+              maxLength: (value) => value.length <= 12 || "Username must be less than 3 characters"
+            },
+            disabled: true
+          })} className="border border-gray-300 rounded p-2" placeholder="Enter your username" type="text" id="username" name="username" />
+          {errors.username && <p className="text-red-500">{errors.username.message}</p>}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div className="flex w-full justify-between gap-2">
+          <label htmlFor="password.pass">Password</label>
+          <input {...register("password.pass", {
+            pattern: {
+              value: /(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])/,
+              message: "Password must contain at least one number, one lowercase and one uppercase letter"
+            },
+            required: "Password is required",
+          })} className="border border-gray-300 rounded p-2" placeholder="Enter your password" type="password" id="password" />
+        </div>
+        {errors.password && <p className="text-red-500">{errors.password.message}</p>}
+
+        <div className="flex w-full justify-between gap-2">
+          <label htmlFor="channel">Channel</label>
+          <input {...register("channel", { required: "Channel is required" })} className="border border-gray-300 rounded p-2" placeholder="Enter your channel" type="text" id="channel" />
+        </div>
+        {errors.channel && <p className="text-red-500">{errors.channel.message}</p>}
+
+        <div>
+          <button type="button" onClick={() => append({ id: Date.now().toString(), value: "" })}>Add Phone</button>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="phoneNumbers">Phone Numbers</label>
+          <button type="button" onClick={() => append({ id: Date.now().toString(), value: "" })}>Add</button>
+          {
+            fields.map((field, index) => (
+              <div key={field.id}>
+                <input key={field.id} {...register(`phoneNumbers.${index}.value`, { required: "Phone numbers are required", pattern: { value: /^\d{10}$/, message: "Phone number must be 10 digits" } })} className="border border-gray-300 rounded p-2" placeholder="Enter your phone numbers" type="text" />
+                <button type="button" onClick={() => remove(index)}>Remove</button>
+              </div>
+            ))
+          }
+        </div>
+
+        <div>
+          <label htmlFor="age">Age</label>
+          <input {...register("age", { required: "Age is required", valueAsNumber: true })} className="border border-gray-300 rounded p-2" placeholder="Enter your age" type="number" id="age" name="age" />
+        </div>
+        <div>
+          <button type="button" onClick={() => {
+            if (watch("username") === "romit") {
+              setValue("username", "admin");
+            } else {
+              setValue("username", "romit", { shouldValidate: true, shouldTouch: true, shouldDirty: true });
+            }
+          }}>toggle username</button>
+        </div>
+
+        <button disabled={!isValid || !isSubmitting} type="submit" className="bg-black text-white border-blue-  p-2 rounded w-1/4">Submit</button>
+        <button className="bg-black text-white border-blue-  p-2 rounded w-1/4" type="button" onClick={() => reset()}>Reset</button>
+      </form>
+      <DevTool control={control} />
+      <div className="mx-auto w-1/3 text-2xl mt-4"> Your age is {watchedAge}</div>
     </div>
   );
 }
